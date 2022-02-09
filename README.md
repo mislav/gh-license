@@ -3,11 +3,18 @@
 Add a LICENSE file to the current directory.
 
 Usage:
-```
+```sh
 $ gh extension install mislav/gh-license
 
-$ gh license bsd-3-clause
+# list available licenses
+$ gh license
 
+# add a specific license
+$ gh license bsd-3-clause
+```
+
+The result will be a LICENSE file in the current directory:
+```
 $ head LICENSE
 BSD 3-Clause License
 
