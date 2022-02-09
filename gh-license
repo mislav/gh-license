@@ -1,0 +1,45 @@
+#!/usr/bin/env bash
+set -e
+
+person_name() {
+  git config user.name 2>/dev/null || echo '[fullname]'
+}
+
+browse() {
+  if [ -n "$BROWSER" ]; then
+    "$BROWSER" "$@"
+  elif type -p xdg-open &>/dev/null; then
+    xdg-open "$@"
+  elif type -p wslview &>/dev/null; then
+    wslview "$@"
+  else
+    open "$@"
+  fi
+}
+
+if [ $# -eq 0 ]; then
+  { echo "Usage: gh license <license>"
+    echo "       gh license --web"
+    echo
+    echo "Adds a LICENSE file based on the license type you specify."
+    echo
+    echo "Available licenses:"
+    gh api licenses --jq '.[] | "  \(.key)"'
+  } >&2
+  exit 1
+fi
+
+if [ "$1" = "--web" ]; then
+  repo=$(gh browse --no-browser)
+  browse "$repo"/community/license/new
+  exit 0
+fi
+
+if [ -e LICENSE ]; then
+  echo "'LICENSE' file already exists. Aborting." >&2
+  exit 1
+fi
+
+license_id="$1"
+license_text="$(gh api "licenses/${license_id}" --jq .body)"
+sed "s/\\[year\\]/$(date '+%Y')/; s/\\[fullname\\]/$(person_name)/" <<<"$license_text" > LICENSE
